@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="24" fill="#282a36"/>
+  <text x="60" y="72" font-family="system-ui" font-size="42" font-weight="bold" text-anchor="middle" fill="#8be9fd">CK</text>
+  <text x="60" y="98" font-family="system-ui" font-size="10" text-anchor="middle" fill="#6272a4">crystkit://</text>
+</svg>

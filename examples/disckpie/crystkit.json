@@ -1,0 +1,32 @@
+{
+  "package": {
+    "name": "DiskPie",
+    "version": "1.0.0",
+    "identifier": "dev.crystkit.disckpie"
+  },
+  "build": {
+    "frontend_dist": "./assets",
+    "dev_url": "http://localhost:5173"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "DiskPie",
+        "width": 1150,
+        "height": 780,
+        "center": true,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "capabilities_manifest": "./capabilities.json"
+    }
+  },
+  "bundle": {
+    "icon": [],
+    "targets": ["dmg", "deb"],
+    "category": "Utility",
+    "copyright": "Copyright (c) 2024 Ali Naqvi"
+  },
+  "plugins": {}
+}

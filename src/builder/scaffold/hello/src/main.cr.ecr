@@ -1,0 +1,45 @@
+require "crystkit"
+
+app = CrystKit::App.new
+app.plugin(CrystKit::Plugins::Dialog.new)
+
+menu_bar = CrystKit::Features::MenuBar.new
+app_menu = CrystKit::Features::Menu.new("<%= name %>")
+app_menu.add_item("About <%= name %>", nil) do
+  if plugin = app.find_plugin?(CrystKit::Plugins::Dialog)
+    plugin.dialog.message(
+      CrystKit::Features::MessageOptions.new(
+        title: "About <%= name %>",
+        message: "<%= name %> v<%= version %>\n\nBuilt with CrystKit",
+        kind: CrystKit::Features::MessageKind::Info,
+      )
+    )
+  end
+end
+app_menu.add_separator
+app_menu.add_item("Quit", "Cmd+Q") { app.quit }
+menu_bar.add(app_menu)
+app.menu_bar = menu_bar
+
+app.tray do |tray|
+  tray.menu do |menu|
+    menu.add_item("show", "Show <%= name %>") { |_| app.windows.first?.try(&.focus) }
+    menu.add_separator
+    menu.add_item("quit", "Quit") { |_| app.quit }
+  end
+  tray.create(Path["icons/tray_icon.png"], "<%= name %>")
+end
+
+app.command "greet", String do |greet_name|
+  "Hello, #{greet_name}!"
+end
+app.command "get_time" do
+  Time.utc.to_s
+end
+app.on("frontend:ping") do |payload|
+  puts "Backend received ping: #{payload}"
+  app.emit("server:tick", {"echo" => payload, "time" => Time.utc.to_s})
+end
+
+app.window(title: "<%= name %>", width: 800, height: 600)
+app.run

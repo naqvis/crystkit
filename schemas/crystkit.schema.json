@@ -1,0 +1,707 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CrystKit Configuration",
+  "description": "Auto-generated from Crystal struct definitions. Do not edit manually.",
+  "type": "object",
+  "properties": {
+    "package": {
+      "type": "object",
+      "description": "Application metadata — name, version, identifier, authors",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Application display name"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Application version in semver format"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9.\\-]+$",
+          "description": "Reverse-domain application identifier (e.g. com.example.app)"
+        },
+        "authors": {
+          "type": "array",
+          "description": "List of application authors",
+          "items": {
+            "type": "string"
+          }
+        },
+        "homepage": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Project homepage URL"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Short description of the application"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "SPDX license identifier (e.g. MIT, Apache-2.0)"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "identifier",
+        "authors"
+      ]
+    },
+    "build": {
+      "type": "object",
+      "description": "Build and dev server configuration",
+      "properties": {
+        "frontend_dist": {
+          "type": "string",
+          "description": "Path to frontend build output directory"
+        },
+        "dev_url": {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "Dev server URL"
+        },
+        "before_build_command": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Command to run before production build"
+        },
+        "before_dev_command": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Command to run before starting dev mode"
+        },
+        "crystal_entry": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Custom Crystal entry point path"
+        },
+        "crystal_flags": {
+          "type": "array",
+          "description": "Additional Crystal compiler flags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wait_for_dev_url": {
+          "type": "boolean",
+          "description": "Wait for dev server to be ready before opening the window"
+        }
+      },
+      "required": [
+        "frontend_dist",
+        "dev_url",
+        "crystal_flags",
+        "wait_for_dev_url"
+      ]
+    },
+    "app": {
+      "type": "object",
+      "description": "Runtime application configuration — windows, security, protocols",
+      "properties": {
+        "windows": {
+          "type": "array",
+          "description": "Window definitions for runtime window creation",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Window title"
+              },
+              "width": {
+                "type": "integer",
+                "format": "Int32",
+                "minimum": 100,
+                "description": "Window width in pixels"
+              },
+              "height": {
+                "type": "integer",
+                "format": "Int32",
+                "minimum": 100,
+                "description": "Window height in pixels"
+              },
+              "x": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "X position on screen"
+              },
+              "y": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Y position on screen"
+              },
+              "center": {
+                "type": "boolean",
+                "description": "Center the window on screen"
+              },
+              "decorations": {
+                "type": "boolean",
+                "description": "Show window decorations (title bar, borders)"
+              },
+              "resizable": {
+                "type": "boolean",
+                "description": "Allow window resizing"
+              },
+              "fullscreen": {
+                "type": "boolean",
+                "description": "Open window in fullscreen mode"
+              },
+              "focusable": {
+                "type": "boolean",
+                "description": "Whether the window can receive focus"
+              },
+              "visible": {
+                "type": "boolean",
+                "description": "Whether the window is visible"
+              },
+              "transparent": {
+                "type": "boolean",
+                "description": "Whether the window is transparent"
+              },
+              "always_on_top": {
+                "type": "boolean",
+                "description": "Keep window on top of others"
+              },
+              "closable": {
+                "type": "boolean",
+                "description": "Show close button"
+              },
+              "maximizable": {
+                "type": "boolean",
+                "description": "Show maximize button"
+              },
+              "minimizable": {
+                "type": "boolean",
+                "description": "Show minimize button"
+              },
+              "opacity": {
+                "type": "number",
+                "format": "Float64",
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "description": "Window opacity (0.0 to 1.0)"
+              },
+              "min_width": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Minimum window width in pixels"
+              },
+              "min_height": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Minimum window height in pixels"
+              },
+              "max_width": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Maximum window width in pixels"
+              },
+              "max_height": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "Int32"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Maximum window height in pixels"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "URL to load in the window instead of HTML content"
+              },
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "Window label for identification in code"
+              },
+              "scroll_bar_style": {
+                "type": "string",
+                "enum": [
+                  "default",
+                  "overlay",
+                  "hidden"
+                ],
+                "description": "Scroll bar style"
+              },
+              "prevent_overflow": {
+                "type": "boolean",
+                "description": "Prevent content from overflowing the window bounds"
+              },
+              "window_effect": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "vibrancy",
+                  "mica",
+                  "acrylic",
+                  "blur"
+                ],
+                "description": "Visual window effect (Vibrancy, Mica, Acrylic, Blur)"
+              },
+              "use_https_scheme": {
+                "type": "boolean",
+                "description": "Use HTTPS scheme for the dev server URL"
+              }
+            },
+            "required": [
+              "title",
+              "width",
+              "height",
+              "center",
+              "decorations",
+              "resizable",
+              "fullscreen",
+              "focusable",
+              "visible",
+              "transparent",
+              "always_on_top",
+              "closable",
+              "maximizable",
+              "minimizable",
+              "opacity",
+              "scroll_bar_style",
+              "prevent_overflow",
+              "window_effect",
+              "use_https_scheme"
+            ]
+          }
+        },
+        "security": {
+          "type": "object",
+          "description": "Security configuration — CSP, isolation, asset protocol",
+          "properties": {
+            "capabilities_manifest": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "Path to the capabilities.json manifest file"
+            },
+            "allow_cors": {
+              "type": "boolean",
+              "description": "Allow CORS requests from webview content"
+            },
+            "isolation": {
+              "type": "boolean",
+              "description": "Enable webview process isolation for security"
+            },
+            "isolation_allowlist": {
+              "type": "array",
+              "description": "List of URLs/domains allowed in isolated webview context",
+              "items": {
+                "type": "string"
+              }
+            },
+            "csp": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "Content Security Policy header value"
+            },
+            "dev_csp": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "CSP override applied during development mode"
+            },
+            "freeze_prototype": {
+              "type": "boolean",
+              "description": "Freeze JavaScript built-in prototypes to prevent tampering"
+            },
+            "asset_protocol": {
+              "type": "object",
+              "properties": {
+                "allow": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "deny": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "allow",
+                "deny"
+              ]
+            },
+            "dangerous_disable_asset_csp_modification": {
+              "type": "boolean",
+              "description": "Dangerously disable CSP modification (not recommended for production)"
+            }
+          },
+          "required": [
+            "allow_cors",
+            "isolation",
+            "isolation_allowlist",
+            "freeze_prototype",
+            "asset_protocol",
+            "dangerous_disable_asset_csp_modification"
+          ]
+        },
+        "protocols": {
+          "type": "array",
+          "description": "Custom protocol handlers for deep linking",
+          "items": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "description": "Custom protocol scheme name (e.g. myapp)"
+              },
+              "serve_assets": {
+                "type": "boolean",
+                "description": "Serve static assets from the custom protocol"
+              },
+              "asset_root": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "Root directory path for serving assets via the protocol"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "URL the protocol should point to"
+              }
+            },
+            "required": [
+              "scheme",
+              "serve_assets"
+            ]
+          }
+        }
+      },
+      "required": [
+        "windows",
+        "security",
+        "protocols"
+      ]
+    },
+    "bundle": {
+      "type": "object",
+      "description": "Packaging and bundling configuration — icons, targets, signing",
+      "properties": {
+        "icon": {
+          "type": "array",
+          "description": "Icon file paths for application icons",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targets": {
+          "type": "array",
+          "description": "Bundle target platforms (dmg, deb, msi, rpm, nsis, appimage)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string",
+          "description": "Application category (Utility, Development, Business, etc.)"
+        },
+        "copyright": {
+          "type": "string",
+          "description": "Copyright notice for the application"
+        },
+        "macos_microphone_usage_description": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "macOS microphone privacy prompt text"
+        },
+        "macos_speech_recognition_usage_description": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "macOS speech-recognition privacy prompt text"
+        },
+        "signing": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "macos": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "identity": {
+                          "type": "string",
+                          "description": "macOS code signing identity (e.g. Developer ID Application: Name (TEAMID))"
+                        },
+                        "entitlements_path": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ],
+                          "description": "Path to entitlements.plist for macOS code signing"
+                        }
+                      },
+                      "required": [
+                        "identity"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "macOS code signing configuration"
+                },
+                "windows": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "certificate_path": {
+                          "type": "string",
+                          "description": "Path to Windows signing certificate file"
+                        },
+                        "password_env": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ],
+                          "description": "Environment variable name containing the certificate password"
+                        }
+                      },
+                      "required": [
+                        "certificate_path"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Windows code signing configuration"
+                }
+              },
+              "required": []
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Code signing configuration"
+        },
+        "upgrade_code": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "MSI upgrade code (stable UUID for Windows installer). Generated at scaffold time."
+        },
+        "external_bin": {
+          "type": "array",
+          "description": "External binaries to bundle with the application",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the external binary"
+              },
+              "path": {
+                "type": "string",
+                "description": "Path to the external binary file or directory"
+              }
+            },
+            "required": [
+              "name",
+              "path"
+            ]
+          }
+        },
+        "pak": {
+          "type": "object",
+          "description": ".vpak archive configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether to emit a .vpak archive of frontend assets"
+            },
+            "compress": {
+              "type": "string",
+              "description": "Compression codec: none, deflate, gzip, or snappy"
+            },
+            "chunk_size": {
+              "type": "string",
+              "description": "Chunk size for .vpak entries (e.g. 256k, 1m)"
+            }
+          },
+          "required": [
+            "enabled",
+            "compress",
+            "chunk_size"
+          ]
+        }
+      },
+      "required": [
+        "icon",
+        "targets",
+        "category",
+        "copyright",
+        "external_bin",
+        "pak"
+      ]
+    },
+    "plugins": {
+      "type": "object",
+      "description": "Plugin-specific configuration. Each key is a plugin identifier.",
+      "additionalProperties": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "package",
+    "build",
+    "app",
+    "bundle",
+    "plugins"
+  ]
+}

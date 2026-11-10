@@ -1,0 +1,46 @@
+{
+  "$schema": "../../schemas/crystkit.schema.json",
+  "package": {
+    "name": "FluxReader",
+    "version": "1.0.0",
+    "identifier": "com.crystkit.fluxreader",
+    "authors": ["CrystKit"],
+    "description": "A native desktop RSS/Atom feed reader showcasing CrystKit framework capabilities.",
+    "license": "MIT"
+  },
+  "build": {
+    "frontend_dist": "./frontend",
+    "crystal_entry": "main.cr"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "FluxReader",
+        "width": 1200,
+        "height": 760,
+        "center": true,
+        "resizable": true,
+        "decorations": true,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "capabilities_manifest": "capabilities.json"
+    }
+  },
+  "bundle": {
+    "icon": [
+      "frontend/icons/generated/icon_16x16.png",
+      "frontend/icons/generated/icon_32x32.png",
+      "frontend/icons/generated/icon_64x64.png",
+      "frontend/icons/generated/icon_128x128.png",
+      "frontend/icons/generated/icon_256x256.png",
+      "frontend/icons/generated/icon_512x512.png",
+      "frontend/icons/generated/icon_1024x1024.png"
+    ],
+    "targets": ["dmg", "deb"],
+    "category": "News",
+    "copyright": "Copyright (c) 2026 CrystKit"
+  },
+  "plugins": {}
+}

@@ -1,0 +1,26 @@
+{
+  "capabilities": [
+    "autostart:manage",
+    "clipboard:read",
+    "clipboard:write",
+    "context_menu:custom",
+    "context_menu:inspect",
+    "devtools:manage",
+    "dialog:open",
+    "dialog:save",
+    "drag:source",
+    "external:open",
+    "fs:read",
+    "http:request",
+    "log:write",
+    "notification:show",
+    "store:manage",
+    "taskbar:manage",
+    "theme:read",
+    "theme:manage",
+    "window:manage"
+  ],
+  "scopes": {
+    "http": ["https://*", "http://*"]
+  }
+}

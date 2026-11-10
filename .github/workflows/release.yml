@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+
+      - name: Install builder shards
+        working-directory: builder
+        run: shards install
+
+      - name: Run builder tests
+        working-directory: builder
+        run: crystal spec
+
+  build:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            src: crystkit
+            dst: crystkit-macos
+          - os: ubuntu-latest
+            src: crystkit
+            dst: crystkit-linux
+          - os: windows-latest
+            src: crystkit.exe
+            dst: crystkit-windows.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+
+      - name: Set up MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install builder shards
+        working-directory: builder
+        run: shards install
+
+      - name: Build CLI
+        working-directory: builder
+        run: shards build --release
+
+      - name: Stage binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "builder/bin/${{ matrix.src }}" "dist/${{ matrix.dst }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: crystkit-${{ matrix.os }}
+          path: dist/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: crystkit-*
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: sha256sum crystkit-* > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            crystkit-*
+            checksums.txt
+          generate_release_notes: true

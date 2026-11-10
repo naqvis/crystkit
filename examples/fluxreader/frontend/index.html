@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FluxReader</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #16161d;
+      --sidebar: #12121a;
+      --border: #272732;
+      --text: #e8e8e8;
+      --text-secondary: #a0a0b0;
+      --text-muted: #6e6e7f;
+      --accent: #6366f1;
+      --accent-text: #ffffff;
+      --hover: #1e1e2a;
+      --selected: #1e1e2a;
+      --danger: #f85149;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    #toolbar {
+      height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+    .btn, .tool {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+    }
+    .btn:hover, .tool:hover { background: var(--hover); color: var(--text); }
+    .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .btn.primary:hover { filter: brightness(1.1); }
+    .tool.icon { padding: 6px 8px; font-size: 14px; }
+
+    #search { position: relative; margin-left: auto; }
+    #search input {
+      background: var(--surface);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 8px;
+      padding: 7px 14px 7px 34px;
+      color: var(--text);
+      width: 420px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    #search input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+    }
+    #search input::placeholder { color: var(--text-muted); }
+    #search::before {
+      content: "🔍";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.4;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    #main { display: flex; flex: 1; min-height: 0; }
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    #sidebar {
+      width: 210px;
+      min-width: 140px;
+      max-width: 400px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    #sidebar-resize {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+    #sidebar-resize:hover,
+    #sidebar-resize.active {
+      background: var(--accent);
+    }
+    #article-list {
+      width: 320px;
+      min-width: 180px;
+      max-width: 500px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+    }
+    #article-resize {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+    #article-resize:hover,
+    #article-resize.active {
+      background: var(--accent);
+    }
+    #reader { flex: 1; background: var(--bg); }
+
+    .section-title {
+      padding: 8px 14px;
+      margin: 6px 0 0 0;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      background: rgba(99,102,241,0.08);
+      border-bottom: 1px solid rgba(99,102,241,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-title:first-child { margin-top: 0; }
+    .hide-empty-toggle {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    .hide-empty-toggle input { margin: 0; cursor: pointer; }
+    .nav-item {
+      padding: 7px 14px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: var(--hover); color: var(--text); }
+    .nav-item.selected {
+      background: var(--selected);
+      border-left-color: var(--accent);
+      color: var(--text);
+    }
+    .nav-item .count { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+    .nav-item.selected .count { color: var(--accent); font-weight: 600; }
+
+    .sidebar-footer {
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+    .hide-empty-toggle {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .hide-empty-toggle input { margin: 0; cursor: pointer; }
+
+    .feed-row {
+      padding: 5px 14px 5px 24px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3px solid transparent;
+    }
+    .feed-row:hover { background: var(--hover); color: var(--text); }
+    .feed-row.selected { background: var(--selected); border-left-color: var(--accent); color: var(--text); }
+    .feed-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .feed-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .feed-count {
+      margin-left: auto;
+      background: var(--accent);
+      color: var(--accent-text);
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      min-width: 16px;
+      text-align: center;
+    }
+    .feed-broken {
+      font-size: 12px;
+      margin-left: 2px;
+      opacity: 0.7;
+    }
+    .feed-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 2px 4px;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .feed-row:hover .feed-delete { opacity: 1; }
+    .feed-delete:hover { color: var(--danger); }
+
+    .pane-header {
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 2px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pane-body { flex: 1; overflow-y: auto; }
+
+    .article-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .article-item:hover { background: var(--hover); }
+    .article-item.selected { background: var(--selected); }
+    .article-item.read .article-title { font-weight: 500; color: #b8b8c8; }
+    .article-item.read .article-summary { color: #6e6e7f; }
+    .article-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .article-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .article-item.read .article-dot { background: #6e6e7f; }
+    .article-source { font-size: 12px; color: var(--text-secondary); }
+    .article-time { font-size: 12px; color: #555; }
+    .article-fav { margin-left: auto; color: #555; font-size: 14px; cursor: pointer; }
+    .article-item.favorite .article-fav { color: var(--accent); }
+    .article-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .article-summary {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    #reader.empty {
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    #reader-header {
+      padding: 18px 26px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #reader-title { font-size: 21px; font-weight: 700; margin: 0 0 8px; line-height: 1.25; }
+    #reader-meta { font-size: 13px; color: var(--text-secondary); }
+    #reader-actions { margin-top: 12px; display: flex; gap: 8px; }
+    #reader-content {
+      padding: 24px 26px;
+      flex: 1;
+      overflow-y: auto;
+      line-height: 1.65;
+      font-size: 15px;
+      color: var(--text);
+    }
+    #reader-content img { max-width: 100%; height: auto; }
+    #reader-content a { color: var(--accent); }
+
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 420px;
+      max-width: 90vw;
+      padding: 16px;
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 16px; }
+    .modal input, .modal select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+    .settings-modal { width: 360px; }
+    .settings-section { margin-bottom: 16px; }
+    .settings-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .settings-label {
+      color: var(--text);
+      font-size: 13px;
+    }
+    .settings-modal { max-height: 70vh; overflow-y: auto; }
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: #3c3c4a;
+      border-radius: 22px;
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .toggle-switch::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+    .toggle-switch.on { background: var(--accent); }
+    .toggle-switch.on::before { transform: translateX(18px); }
+    .settings-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      margin-bottom: 8px;
+    }
+    .settings-btn:hover { background: var(--hover); color: var(--text); }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #20202e;
+      border: 1px solid #3c3c50;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 200;
+      max-width: 400px;
+      color: #e8e8e8;
+      font-size: 13px;
+      line-height: 1.4;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .toast-msg { flex: 1; min-width: 0; }
+    .toast-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .toast-close:hover { color: var(--text); }
+
+    #log-list {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 0 0 12px;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+    #log-list:empty::before { content: "No errors yet."; color: var(--text-muted); }
+
+    .ctx-menu { display: none; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button type="button" class="btn primary" id="btn-add">＋ Add Feed</button>
+    <button type="button" class="tool" id="btn-refresh">↻ Refresh</button>
+    <button type="button" class="tool" id="btn-mark-read">✓ Mark Read</button>
+    <div id="search"><input type="search" id="search-input" placeholder="Search articles (⌘1)"></div>
+    <button type="button" class="tool icon" id="btn-settings" title="Settings">⚙</button>
+  </div>
+
+  <div id="main">
+    <div id="sidebar" class="pane">
+      <div class="section-title">
+        <span>Views</span>
+        <label class="hide-empty-toggle">
+          <input type="checkbox" id="toggle-hide-empty"> Hide empty
+        </label>
+      </div>
+      <div id="view-list"></div>
+
+      <div class="section-title">Categories</div>
+      <div id="category-list"></div>
+
+      <div class="section-title">Feeds</div>
+      <div id="feed-list"></div>
+    </div>
+
+    <div id="sidebar-resize"></div>
+
+    <div id="article-list" class="pane">
+      <div class="pane-header" id="articles-header">Articles</div>
+      <div class="pane-body" id="articles-body"></div>
+    </div>
+
+    <div id="article-resize"></div>
+
+    <div id="reader" class="pane empty">Select an article to read</div>
+  </div>
+
+  <div class="modal-overlay" id="add-modal">
+    <div class="modal">
+      <h3>Subscribe to feed</h3>
+      <input type="url" id="feed-url" placeholder="https://example.com/feed.xml">
+      <input type="text" id="feed-category" placeholder="Category" value="Feed">
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-cancel">Cancel</button>
+        <button type="button" class="btn primary" id="btn-subscribe">Subscribe</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal">
+      <h3>Change category</h3>
+      <input type="text" id="category-input" placeholder="Category">
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-cancel-cat">Cancel</button>
+        <button type="button" class="btn primary" id="btn-save-cat">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal settings-modal">
+      <h3>Settings</h3>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="settings-row">
+          <span class="settings-label">Theme</span>
+          <span style="color:var(--text-muted);font-size:12px">Dark (system)</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Notifications</div>
+        <div class="settings-row" id="row-notifications">
+          <span class="settings-label">Show desktop notifications</span>
+          <span class="toggle-switch on" id="toggle-notifications" role="switch" aria-checked="true"></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Startup</div>
+        <div class="settings-row" style="margin-bottom:8px">
+          <span class="settings-label">Refresh interval</span>
+          <select id="select-refresh-interval" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;width:auto;margin:0">
+            <option value="15">15 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="120">2 hours</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Refresh on launch</span>
+          <span class="toggle-switch on" id="toggle-refresh-launch" role="switch" aria-checked="true"></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Autostart</div>
+        <div class="settings-row">
+          <span class="settings-label">Launch FluxReader on login</span>
+          <span class="toggle-switch" id="toggle-autostart" role="switch" aria-checked="false"></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <button type="button" class="settings-btn danger" id="btn-clear-data" style="color:var(--danger)">Clear All Data</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Developer</div>
+        <div class="settings-row">
+          <span class="settings-label">Developer Console</span>
+          <span class="toggle-switch" id="toggle-devtools" role="switch" aria-checked="false"></span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-close-settings">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="log-modal">
+    <div class="modal">
+      <h3>Error Log</h3>
+      <div id="log-list"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-close-logs">Close</button>
+        <button type="button" class="btn" id="btn-clear-logs">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">
+    <span class="toast-msg"></span>
+    <button type="button" class="toast-close" id="toast-close">✕</button>
+  </div>
+
+  <script>
+    const ipc = window.__CRYSTKIT_IPC__;
+    if (!ipc) {
+      document.body.innerHTML = '<div style="padding:20px">FluxReader must run inside CrystKit.</div>';
+      throw new Error('CrystKit IPC not found');
+    }
+
+    const errorLog = [];
+
+    function safeMessage(err) {
+      if (!err) return String(err);
+      if (err.message) return err.message;
+      try { return JSON.stringify(err); } catch (_) { return String(err); }
+    }
+
+    function logError(cmd, err) {
+      const entry = `[${new Date().toLocaleTimeString()}] ${cmd}: ${safeMessage(err)}`;
+      errorLog.push(entry);
+      console.error(entry, err);
+    }
+
+    window.onerror = function(msg, url, line, col, error) {
+      logError('global', error || msg);
+    };
+
+    window.addEventListener('unhandledrejection', function(e) {
+      logError('unhandled', e.reason);
+    });
+
+    async function invoke(cmd, params) {
+      try {
+        return await ipc.invoke(cmd, params);
+      } catch (err) {
+        logError(cmd, err);
+        showToast(safeMessage(err) || 'Error', true);
+        throw err;
+      }
+    }
+
+    const state = {
+      feeds: [],
+      categories: [],
+      articles: [],
+      counts: { all: 0, unread: 0, favorites: 0 },
+      view: 'all',
+      selectedFeedId: null,
+      selectedCategoryId: null,
+      selectedArticleId: null,
+      query: '',
+      hideEmpty: false,
+    };
+
+    const els = {
+      viewList: document.getElementById('view-list'),
+      feedList: document.getElementById('feed-list'),
+      categoryList: document.getElementById('category-list'),
+      articlesBody: document.getElementById('articles-body'),
+      articlesHeader: document.getElementById('articles-header'),
+      reader: document.getElementById('reader'),
+      addModal: document.getElementById('add-modal'),
+      categoryModal: document.getElementById('category-modal'),
+      settingsModal: document.getElementById('settings-modal'),
+      feedUrl: document.getElementById('feed-url'),
+      feedCategory: document.getElementById('feed-category'),
+      categoryInput: document.getElementById('category-input'),
+      toast: document.getElementById('toast'),
+    };
+
+    const feedColors = ['#22c55e', '#f59e0b', '#3b82f6', '#ef4444', '#a855f7', '#14b8a6', '#f97316', '#ec4899'];
+    function feedColor(feed) {
+      let hash = 0;
+      for (const c of String(feed.id)) hash = (hash * 31 + c.charCodeAt(0)) >>> 0;
+      return feedColors[hash % feedColors.length];
+    }
+
+    let categoryFeedId = null;
+    function simplifyError(msg) {
+      if (!msg) return 'An unknown error occurred';
+      if (msg.includes('Unexpected end of http response')) return 'Feed server closed connection unexpectedly';
+      if (msg.includes('Connection refused')) return 'Feed server refused connection';
+      if (msg.includes('Connection reset')) return 'Feed connection was reset';
+      if (msg.includes('Connection timed out') || msg.includes('Timed out')) return 'Feed server did not respond (timeout)';
+      if (msg.includes('No such host') || msg.includes('getaddrinfo')) return 'Feed hostname could not be resolved';
+      if (msg.includes('404')) return 'Feed not found (404)';
+      if (msg.includes('500') || msg.includes('502') || msg.includes('503')) return 'Feed server error';
+      if (msg.includes('410')) return 'Feed has been permanently removed (410)';
+      if (msg.includes('Invalid URL') || msg.includes('Missing scheme')) return 'Invalid feed URL';
+      if (msg.includes('SSL') || msg.includes('certificate')) return 'Feed SSL/TLS error';
+      // Strip technical prefix like "CrystKit::Utils::NetworkError: HTTP request failed: "
+      const stripped = msg.replace(/^[\w:]+Error:\s*/, '').replace(/^HTTP request failed:\s*/, '');
+      return stripped.charAt(0).toUpperCase() + stripped.slice(1) || 'An error occurred';
+    }
+
+    let toastTimer = null;
+    let toastDismiss = null;
+
+    function showToast(msg, isError) {
+      els.toast.classList.remove('show');
+      clearTimeout(toastTimer);
+      if (toastDismiss) { toastDismiss(); toastDismiss = null; }
+      const displayMsg = isError ? simplifyError(msg) : msg;
+      els.toast.querySelector('.toast-msg').textContent = displayMsg;
+      els.toast.className = 'toast show' + (isError ? ' error' : '');
+      const closeBtn = els.toast.querySelector('.toast-close');
+      function dismiss() { els.toast.classList.remove('show'); }
+      if (isError) {
+        closeBtn.style.display = '';
+        closeBtn.onclick = dismiss;
+        toastDismiss = dismiss;
+        toastTimer = setTimeout(dismiss, 6000);
+      } else {
+        closeBtn.style.display = 'none';
+        toastDismiss = null;
+        toastTimer = setTimeout(dismiss, 3000);
+      }
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return isNaN(d) ? iso : d.toLocaleString();
+    }
+
+    function timeAgo(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+      if (diff < 604800) return Math.floor(diff / 86400) + 'd';
+      return d.toLocaleDateString();
+    }
+
+    function articleSnippet(a) {
+      const raw = a.content || a.summary || '';
+      if (!raw) return '';
+      const tmp = document.createElement('div');
+      tmp.innerHTML = raw;
+      let text = '';
+      const firstP = tmp.querySelector('p');
+      if (firstP) {
+        text = (firstP.textContent || firstP.innerText || '').trim();
+      }
+      // If <p> gave nothing useful, use full text
+      if (text.length < 30) {
+        text = (tmp.textContent || tmp.innerText || '').trim();
+      }
+      // If still too short and we used content, try summary
+      if (text.length < 30 && raw === a.content && a.summary) {
+        tmp.innerHTML = a.summary;
+        text = (tmp.textContent || tmp.innerText || '').trim();
+      }
+      return text.slice(0, 250);
+    }
+
+    async function loadFeeds() {
+      state.feeds = await invoke('feeds.list');
+      const catUnread = {};
+      state.feeds.forEach(f => {
+        if (f.category_id != null) {
+          catUnread[f.category_id] = (catUnread[f.category_id] || 0) + (f.unread || 0);
+        }
+      });
+      state.categories = [...new Map(state.feeds.map(f => [f.category_id, f.category])).entries()]
+        .map(([id, name]) => ({ id, name, unread: catUnread[id] || 0 }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      renderSidebar();
+    }
+
+    async function loadCounts() {
+      state.counts = await invoke('articles.counts');
+      renderSidebar();
+    }
+
+    async function loadArticles() {
+      let list;
+      if (state.query) {
+        list = await invoke('search.query', { q: state.query, limit: 100 });
+      } else {
+        const params = { filter: state.view };
+        if (state.selectedFeedId) params.feed_id = state.selectedFeedId;
+        if (state.selectedCategoryId) params.category_id = state.selectedCategoryId;
+        list = await invoke('articles.list', params);
+      }
+      state.articles = list;
+      renderArticles();
+    }
+
+    function renderSidebar() {
+      renderViews();
+      renderCategories();
+      renderFeeds();
+    }
+
+    function renderViews() {
+      els.viewList.innerHTML = '';
+      const views = [
+        { key: 'all', label: 'All Articles', count: state.counts.all },
+        { key: 'unread', label: 'Unread', count: state.counts.unread },
+        { key: 'favorites', label: 'Favorites', count: state.counts.favorites },
+      ];
+      views.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'nav-item' + (state.view === v.key && !state.selectedFeedId && !state.selectedCategoryId ? ' selected' : '');
+        div.dataset.view = v.key;
+        div.innerHTML = `<span>${escapeHtml(v.label)}</span><span class="count">${v.count}</span>`;
+        div.onclick = () => {
+          state.view = v.key;
+          state.selectedFeedId = null;
+          state.selectedCategoryId = null;
+          renderSidebar();
+          loadArticles();
+        };
+        els.viewList.appendChild(div);
+      });
+    }
+
+    function renderCategories() {
+      els.categoryList.innerHTML = '';
+      const cats = state.hideEmpty ? state.categories.filter(c => c.unread > 0) : state.categories;
+      cats.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'nav-item' + (state.selectedCategoryId === c.id ? ' selected' : '');
+        div.innerHTML = `<span>${escapeHtml(c.name)}</span><span class="count">${c.unread || 0}</span>`;
+        div.onclick = () => {
+          state.selectedCategoryId = c.id;
+          state.selectedFeedId = null;
+          renderSidebar();
+          loadArticles();
+        };
+        els.categoryList.appendChild(div);
+      });
+    }
+
+    function renderFeeds() {
+      els.feedList.innerHTML = '';
+      const feeds = state.hideEmpty ? state.feeds.filter(f => f.unread > 0) : state.feeds;
+      const byCat = {};
+      feeds.forEach(f => {
+        const cat = f.category || 'Uncategorized';
+        if (!byCat[cat]) byCat[cat] = [];
+        byCat[cat].push(f);
+      });
+
+      Object.keys(byCat).sort().forEach(cat => {
+        const header = document.createElement('div');
+        header.className = 'section-title';
+        header.style.padding = '10px 14px 4px 24px';
+        header.textContent = cat;
+        els.feedList.appendChild(header);
+
+        byCat[cat].forEach(f => {
+          const div = document.createElement('div');
+          div.className = 'feed-row' + (state.selectedFeedId === f.id ? ' selected' : '');
+          div.dataset.id = f.id;
+          div.style.paddingLeft = '34px';
+          div.innerHTML = `
+            <span class="feed-dot" style="background:${feedColor(f)}"></span>
+            <span class="feed-title" title="${escapeHtml(f.url)}">${escapeHtml(f.title)}</span>
+            ${f.error_count > 0 ? `<span class="feed-broken" title="Feed unreachable">⚠</span>` : ''}
+            <span class="feed-count">${f.unread != null ? f.unread : 0}</span>
+            <button type="button" class="feed-delete" title="Remove feed">×</button>
+          `;
+          div.addEventListener('click', () => {
+            state.selectedFeedId = f.id;
+            state.selectedCategoryId = null;
+            renderSidebar();
+            loadArticles();
+          });
+          div.querySelector('.feed-delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeFeed(f.id);
+          });
+          els.feedList.appendChild(div);
+        });
+      });
+    }
+
+    function updateViewSelection() {
+      document.querySelectorAll('#sidebar .nav-item[data-view]').forEach(el => {
+        el.classList.toggle('selected', el.dataset.view === state.view && !state.selectedFeedId && !state.selectedCategoryId);
+      });
+    }
+
+    function renderArticles() {
+      els.articlesBody.innerHTML = '';
+      updateViewSelection();
+
+      const filtered = state.articles;
+      const label = state.view === 'unread' ? `${state.counts.unread} unread · by date`
+        : state.view === 'favorites' ? `${state.counts.favorites} favorites · by date`
+        : state.selectedFeedId ? (state.feeds.find(f => f.id === state.selectedFeedId)?.title || 'Articles')
+        : state.selectedCategoryId ? (state.categories.find(c => c.id === state.selectedCategoryId)?.name || 'Articles')
+        : `All articles · ${state.counts.all}`;
+      els.articlesHeader.textContent = label;
+
+      if (!filtered.length) {
+        els.articlesBody.innerHTML = '<div style="padding:16px;color:var(--text-muted);font-size:13px">No articles found.</div>';
+        return;
+      }
+
+      filtered.forEach(a => {
+        const snippet = articleSnippet(a);
+        const div = document.createElement('div');
+        div.className = 'article-item' + (a.id === state.selectedArticleId ? ' selected' : '') + (a.is_read ? ' read' : '') + (a.is_favorite ? ' favorite' : '');
+        div.dataset.id = a.id;
+        div.innerHTML = `
+          <div class="article-meta-row">
+            <span class="article-dot"></span>
+            <span class="article-source">${escapeHtml(a.feed_title || '')}</span>
+            <span class="article-time">· ${timeAgo(a.published_at)}</span>
+            <span class="article-fav">★</span>
+          </div>
+          <div class="article-title">${escapeHtml(a.title)}</div>
+          ${snippet ? `<div class="article-summary">${escapeHtml(snippet.slice(0, 160))}</div>` : ''}
+        `;
+        div.onclick = () => selectArticle(a.id);
+        div.ondblclick = () => popoutArticle(a.id);
+        div.querySelector('.article-fav').onclick = (e) => {
+          e.stopPropagation();
+          toggleArticleFav(a.id);
+        };
+        els.articlesBody.appendChild(div);
+      });
+    }
+
+    async function selectArticle(id) {
+      state.selectedArticleId = id;
+      renderArticles();
+      els.reader.classList.remove('empty');
+      els.reader.innerHTML = '<div style="padding:24px 26px;color:var(--text-muted)"><em>Loading article…</em></div>';
+      await new Promise(r => setTimeout(r, 0));
+      const a = await invoke('articles.get', id);
+      if (!a) return;
+      if (!a.is_read) {
+        await invoke('articles.mark_read', id);
+        a.is_read = true;
+        const local = state.articles.find(x => x.id === id);
+        if (local) local.is_read = true;
+        renderArticles();
+        loadFeeds();
+        loadCounts();
+      }
+
+      const hasContent = (a.content || '').length > 200;
+      const hasSummary = (a.summary || '').length > 200;
+      if (a.link && !hasContent && !hasSummary) {
+        renderReader(a, '<p>Loading article content...</p>');
+        try {
+          const fetched = await invoke('articles.fetch_content', id);
+          renderReader(a, fetched || a.summary || '<p>No content available.</p>');
+        } catch (_) {
+          renderReader(a);
+        }
+      } else {
+        renderReader(a);
+      }
+    }
+
+    function renderReader(a, fetchedContent) {
+      const content = fetchedContent || a.content || a.summary || '<p>No content available.</p>';
+      els.reader.classList.remove('empty');
+      els.reader.innerHTML = `
+        <div id="reader-header">
+          <div id="reader-meta">
+            ${escapeHtml(a.feed_title || '')} · ${timeAgo(a.published_at)}
+          </div>
+          <div id="reader-title">${escapeHtml(a.title)}</div>
+          <div id="reader-actions">
+            <button type="button" class="btn" id="btn-open">Open in browser</button>
+            <button type="button" class="btn" id="btn-fav">${a.is_favorite ? 'Unfavorite' : 'Favorite'}</button>
+            <button type="button" class="btn" id="btn-popout">Pop out</button>
+          </div>
+        </div>
+        <div id="reader-content">${sanitizeContent(content)}</div>
+      `;
+      document.getElementById('btn-open').onclick = () => a.link && invoke('reader.open_window', a.link);
+      document.getElementById('btn-popout').onclick = () => popoutArticle(a.id);
+      document.getElementById('reader-content').addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        if (href) invoke('reader.open_window', href);
+      });
+      document.getElementById('btn-fav').onclick = async () => {
+        await invoke('articles.toggle_favorite', a.id);
+        const updated = await invoke('articles.get', a.id);
+        renderReader(updated);
+        const local = state.articles.find(x => x.id === a.id);
+        if (local) local.is_favorite = updated.is_favorite;
+        renderArticles();
+      };
+    }
+
+    function sanitizeContent(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html || '';
+      div.querySelectorAll('script, iframe, object, embed').forEach(el => { el.remove(); });
+      return div.innerHTML;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function addFeed() {
+      const url = els.feedUrl.value.trim();
+      const category = els.feedCategory.value.trim() || 'Feed';
+      if (!url) return;
+      els.addModal.classList.remove('open');
+      els.feedUrl.value = '';
+      els.feedCategory.value = 'Feed';
+      try {
+        await invoke('feeds.add', [url, category]);
+        showToast('Subscribed successfully');
+        await loadFeeds();
+        await loadCounts();
+        await loadArticles();
+      } catch (_) {}
+    }
+
+    async function removeFeed(id) {
+      await invoke('feeds.remove', id);
+      if (state.selectedFeedId === id) state.selectedFeedId = null;
+      loadFeeds(); loadCounts(); loadArticles();
+    }
+
+    async function toggleArticleFav(id) {
+      const updated = await invoke('articles.toggle_favorite', id);
+      const local = state.articles.find(x => x.id === id);
+      if (local) {
+        const wasFav = local.is_favorite;
+        local.is_favorite = updated.is_favorite;
+        if (!wasFav && updated.is_favorite) state.counts.favorites = (state.counts.favorites || 0) + 1;
+        if (wasFav && !updated.is_favorite) state.counts.favorites = Math.max(0, (state.counts.favorites || 0) - 1);
+      }
+      renderArticles();
+      renderViews();
+    }
+
+    function openCategoryModal(feedId, currentCategory) {
+      categoryFeedId = feedId;
+      els.categoryInput.value = currentCategory;
+      els.categoryModal.classList.add('open');
+      els.categoryInput.focus();
+    }
+
+    async function saveCategory() {
+      const name = els.categoryInput.value.trim();
+      if (!name || !categoryFeedId) return;
+      els.categoryModal.classList.remove('open');
+      try {
+        await invoke('feeds.set_category', [categoryFeedId, name]);
+        showToast('Category updated');
+        await loadFeeds();
+        await loadCounts();
+      } catch (_) {}
+      categoryFeedId = null;
+    }
+
+    async function markAllRead() {
+      const params = {};
+      if (state.selectedFeedId) params.feed_id = state.selectedFeedId;
+      else if (state.selectedCategoryId) params.category_id = state.selectedCategoryId;
+      try {
+        await invoke('articles.mark_all_read', params);
+        showToast('Marked all read');
+        await loadFeeds();
+        await loadCounts();
+        await loadArticles();
+      } catch (_) {}
+    }
+
+    async function importOPML() {
+      try {
+        const path = await invoke('dialog.open_file', {
+          title: 'Import OPML',
+          filters: [{ name: 'OPML Files', extensions: ['opml', 'xml'] }]
+        });
+        if (!path) return;
+        const res = await invoke('opml.import', path);
+        showToast(`Imported ${res.added} feed(s)`);
+        loadFeeds(); loadCounts(); loadArticles();
+      } catch (_) {}
+    }
+
+    async function exportOPML() {
+      try {
+        const path = await invoke('dialog.save_file', {
+          title: 'Export OPML',
+          default_name: 'fluxreader-subscriptions.opml',
+          filters: [{ name: 'OPML Files', extensions: ['opml', 'xml'] }]
+        });
+        if (!path) return;
+        await invoke('opml.export', path);
+        showToast('Subscriptions exported');
+      } catch (_) {}
+    }
+
+    async function popoutArticle(id) {
+      try { await invoke('reader.popout', id); } catch (_) {}
+    }
+
+    function renderLogs() {
+      const list = document.getElementById('log-list');
+      list.textContent = errorLog.join('\n');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function setToggle(id, value) {
+      const el = document.getElementById(id);
+      el.classList.toggle('on', !!value);
+      el.setAttribute('aria-checked', !!value);
+    }
+
+    async function loadSettings() {
+      try {
+        const [notif, interval, launch, autostart] = await Promise.all([
+          invoke('store.get', ['fluxreader', 'notifications']).catch(() => null),
+          invoke('store.get', ['fluxreader', 'refresh_interval']).catch(() => null),
+          invoke('store.get', ['fluxreader', 'refresh_on_launch']).catch(() => null),
+          invoke('autostart.enabled').catch(() => false),
+        ]);
+        setToggle('toggle-notifications', notif !== false);
+        if (interval) document.getElementById('select-refresh-interval').value = String(interval);
+        setToggle('toggle-refresh-launch', launch !== false);
+        setToggle('toggle-autostart', !!autostart);
+        const dt = await invoke('devtools.status').catch(() => ({ open: false }));
+        setToggle('toggle-devtools', dt.open);
+      } catch (_) {}
+    }
+
+    document.getElementById('btn-add').onclick = () => {
+      els.addModal.classList.add('open');
+      els.feedUrl.value = '';
+      els.feedCategory.value = 'Feed';
+      els.feedUrl.focus();
+    };
+    document.getElementById('btn-cancel').onclick = () => els.addModal.classList.remove('open');
+
+    els.addModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') els.addModal.classList.remove('open');
+    });
+    els.feedUrl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addFeed(); }
+    });
+    els.feedCategory.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addFeed(); }
+    });
+    document.getElementById('btn-subscribe').onclick = addFeed;
+    document.getElementById('btn-refresh').onclick = async () => {
+      await invoke('feeds.refresh_all');
+      showToast('Refreshing feeds...');
+    };
+    document.getElementById('btn-mark-read').onclick = markAllRead;
+    document.getElementById('btn-settings').onclick = () => {
+      els.settingsModal.classList.add('open');
+      loadSettings();
+    };
+    document.getElementById('btn-close-settings').onclick = () => els.settingsModal.classList.remove('open');
+    els.settingsModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') els.settingsModal.classList.remove('open');
+    });
+
+    document.getElementById('toggle-notifications').onclick = async function() {
+      const on = this.classList.toggle('on');
+      this.setAttribute('aria-checked', on);
+      await invoke('store.set', ['fluxreader', 'notifications', on]);
+    };
+    document.getElementById('select-refresh-interval').onchange = async (e) => {
+      const mins = parseInt(e.target.value);
+      await invoke('store.set', ['fluxreader', 'refresh_interval', mins]);
+    };
+    document.getElementById('toggle-refresh-launch').onclick = async function() {
+      const on = this.classList.toggle('on');
+      this.setAttribute('aria-checked', on);
+      await invoke('store.set', ['fluxreader', 'refresh_on_launch', on]);
+    };
+    document.getElementById('toggle-autostart').onclick = async function() {
+      const on = this.classList.toggle('on');
+      this.setAttribute('aria-checked', on);
+      if (on) {
+        await invoke('autostart.enable', {});
+      } else {
+        await invoke('autostart.disable');
+      }
+    };
+    document.getElementById('toggle-devtools').onclick = async function() {
+      const on = this.classList.contains('on');
+      await invoke('devtools.toggle');
+      this.classList.toggle('on');
+      this.setAttribute('aria-checked', !on);
+    };
+    document.getElementById('btn-clear-data').onclick = async () => {
+      const ok = await invoke('dialog.confirm', { title: 'Clear Data', message: 'Delete all feeds, articles, and settings? This cannot be undone.' });
+      if (ok) {
+        await invoke('data.clear');
+        els.settingsModal.classList.remove('open');
+        showToast('All data cleared');
+      }
+    };
+    els.categoryModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { els.categoryModal.classList.remove('open'); categoryFeedId = null; }
+      if (e.key === 'Enter') { e.preventDefault(); saveCategory(); }
+    });
+    document.getElementById('btn-cancel-cat').onclick = () => { els.categoryModal.classList.remove('open'); categoryFeedId = null; };
+    document.getElementById('btn-save-cat').onclick = saveCategory;
+    document.getElementById('btn-close-logs').onclick = () => document.getElementById('log-modal').classList.remove('open');
+    document.getElementById('btn-clear-logs').onclick = () => { errorLog.length = 0; renderLogs(); };
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      state.query = e.target.value.trim();
+      loadArticles();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'r' || e.key === 'R') invoke('feeds.refresh_all');
+      if (e.key === 'n' || e.key === 'N') {
+        const unread = state.articles.find(a => !a.is_read);
+        if (unread) selectArticle(unread.id);
+      }
+    });
+
+    ipc.listen('feed:updated', () => { loadFeeds(); loadCounts(); loadArticles(); });
+    ipc.listen('feed:error', (payload) => {
+      const msg = payload.message || 'unknown';
+      logError('feed:error', { message: msg });
+      showToast(msg, true);
+    });
+    ipc.listen('article:new', (payload) => showToast(`${payload.count} new article(s) in ${payload.feed_title}`));
+    ipc.listen('deep-link:subscribe', (payload) => {
+      if (payload.url) {
+        els.feedUrl.value = payload.url;
+        els.addModal.classList.add('open');
+        els.feedUrl.focus();
+      }
+    });
+    ipc.listen('ui:show_subscribe', () => {
+      els.addModal.classList.add('open');
+      els.feedUrl.value = '';
+      els.feedCategory.value = 'Feed';
+      els.feedUrl.focus();
+    });
+    ipc.listen('ui:show_settings', () => els.settingsModal.classList.add('open'));
+    ipc.listen('ui:import_opml', importOPML);
+    ipc.listen('ui:export_opml', exportOPML);
+
+    function handleCtxAction(itemId, articleEl, feedEl) {
+      if (itemId === 'mark-read' && articleEl) {
+        invoke('articles.mark_read', +articleEl.dataset.id).then(() => { loadFeeds(); loadCounts(); loadArticles(); });
+      } else if (itemId === 'toggle-fav' && articleEl) {
+        toggleArticleFav(+articleEl.dataset.id);
+      } else if (itemId === 'pop-out' && articleEl) {
+        popoutArticle(+articleEl.dataset.id);
+      } else if (itemId === 'change-category' && feedEl) {
+        const f = state.feeds.find(x => x.id === +feedEl.dataset.id);
+        openCategoryModal(+feedEl.dataset.id, f ? f.category || 'Feed' : 'Feed');
+      } else if (itemId === 'refresh-feed' && feedEl) {
+        invoke('feeds.refresh', +feedEl.dataset.id).then(() => { showToast('Feed refreshed'); loadFeeds(); loadArticles(); });
+      } else if (itemId === 'remove-feed' && feedEl) {
+        removeFeed(+feedEl.dataset.id);
+      } else if (itemId === 'mark-all-read') {
+        markAllRead();
+      }
+    }
+
+    document.addEventListener('contextmenu', function(e) {
+      const target = e.target;
+      const articleItem = target.closest ? target.closest('.article-item') : null;
+      const feedRow = target.closest ? target.closest('.feed-row') : null;
+      const viewItem = target.closest ? target.closest('.nav-item[data-view]') : null;
+
+      if (!articleItem && !feedRow && !viewItem) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const linkEl = target.closest ? target.closest('a') : null;
+      let customNode = 'default';
+      if (articleItem) customNode = 'fluxreader-article';
+      else if (feedRow) customNode = 'fluxreader-feed';
+      else if (viewItem) customNode = 'fluxreader-view';
+
+      invoke('contextmenu.show', {
+        x: e.clientX, y: e.clientY,
+        selection: window.getSelection().toString(),
+        isEditable: target.isContentEditable || (['INPUT', 'TEXTAREA'].indexOf(target.tagName) !== -1),
+        linkUrl: linkEl ? linkEl.href : null,
+        imageSrc: null,
+        nodeName: customNode,
+      }).then(function(result) {
+        if (result && result.item_id) handleCtxAction(result.item_id, articleItem, feedRow);
+      }).catch(function() {});
+    }, true);
+
+    loadFeeds().catch(err => logError('startup:loadFeeds', err));
+    loadCounts().catch(err => logError('startup:loadCounts', err));
+    loadArticles().catch(err => logError('startup:loadArticles', err));
+    invoke('store.get', ['fluxreader', 'hide_empty']).then(function(v) {
+      if (v) { state.hideEmpty = true; document.getElementById('toggle-hide-empty').checked = true; renderSidebar(); }
+    }).catch(function() {});
+
+    // ── Sidebar resize ──
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const handle = document.getElementById('sidebar-resize');
+      let startX, startW;
+      function onStart(e) {
+        startX = e.clientX;
+        startW = sidebar.offsetWidth;
+        handle.classList.add('active');
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+      }
+      function onMove(e) {
+        const w = Math.max(140, Math.min(400, startW + (e.clientX - startX)));
+        sidebar.style.width = w + 'px';
+      }
+      function onEnd() {
+        handle.classList.remove('active');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+      }
+      handle.addEventListener('mousedown', onStart);
+    })();
+
+    // ── Article-list resize ──
+    (function() {
+      const el = document.getElementById('article-list');
+      const handle = document.getElementById('article-resize');
+      let startX, startW;
+      function onStart(e) {
+        startX = e.clientX;
+        startW = el.offsetWidth;
+        handle.classList.add('active');
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+      }
+      function onMove(e) {
+        const w = Math.max(180, Math.min(500, startW + (e.clientX - startX)));
+        el.style.width = w + 'px';
+      }
+      function onEnd() {
+        handle.classList.remove('active');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+      }
+      handle.addEventListener('mousedown', onStart);
+    })();
+
+    // ── Hide empty toggle ──
+    document.getElementById('toggle-hide-empty').addEventListener('change', function(e) {
+      state.hideEmpty = e.target.checked;
+      invoke('store.set', ['fluxreader', 'hide_empty', state.hideEmpty]).catch(() => {});
+      renderSidebar();
+    });
+  </script>
+</body>
+</html>

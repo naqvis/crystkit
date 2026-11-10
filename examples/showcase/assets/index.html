@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline'; connect-src 'self' wss: https:;"
+    />
+    <title>Crystal Webview Showcase</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="toast-container"></div>
+    <header>
+      <div class="brand">
+        <span class="logo">◆</span>
+        <h1>Crystal Webview Showcase</h1>
+      </div>
+      <div class="status">
+        <span id="clock">—</span>
+        <span class="pill" id="memory">memory…</span>
+        <span class="pill" id="ws-status">ws: disconnected</span>
+      </div>
+    </header>
+
+    <nav>
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="files">Files</button>
+      <button class="tab" data-tab="clipboard">Clipboard</button>
+      <button class="tab" data-tab="dialogs">Dialogs</button>
+      <button class="tab" data-tab="http">HTTP</button>
+      <button class="tab" data-tab="websocket">WebSocket</button>
+      <button class="tab" data-tab="processes">Processes</button>
+      <button class="tab" data-tab="shell">Shell</button>
+      <button class="tab" data-tab="tray">System Tray</button>
+      <button class="tab" data-tab="taskbar">Taskbar</button>
+      <button class="tab" data-tab="shortcuts">Shortcuts</button>
+      <button class="tab" data-tab="autostart">Autostart</button>
+      <button class="tab" data-tab="window">Window</button>
+      <button class="tab" data-tab="screen">Screen</button>
+      <button class="tab" data-tab="updates">Updates</button>
+      <button class="tab" data-tab="system">System</button>
+      <button class="tab" data-tab="recents">Recents</button>
+      <button class="tab" data-tab="device">Device</button>
+      <button class="tab" data-tab="storage">Storage</button>
+      <button class="tab" data-tab="watcher">Watcher</button>
+      <button class="tab" data-tab="hardware">Hardware</button>
+      <button class="tab" data-tab="permissions">Permissions</button>
+      <button class="tab" data-tab="effects">Effects</button>
+      <button class="tab" data-tab="positioning">Positioning</button>
+      <button class="tab" data-tab="speech">Speech</button>
+      <button class="tab" data-tab="toolbar">Toolbar</button>
+      <button class="tab" data-tab="cookies">Cookies</button>
+      <button class="tab" data-tab="printing">Printing</button>
+      <button class="tab" data-tab="display">Display</button>
+      <button class="tab" data-tab="resources">Resources</button>
+      <button class="tab" data-tab="draggable">Draggable</button>
+      <button class="tab" data-tab="navigation">Navigation</button>
+      <button class="tab" data-tab="sidecar">Sidecar</button>
+      <button class="tab" data-tab="dragsource">Drag Source</button>
+      <button class="tab" data-tab="devtools">DevTools</button>
+      <button class="tab" data-tab="wstate">Win State</button>
+      <button class="tab" data-tab="dragdrop">Drag Drop</button>
+    </nav>
+
+    <main>
+      <!-- Overview ────────────────────────────────────────────────────────── -->
+      <section class="panel active" data-panel="overview">
+        <h2>Welcome</h2>
+        <p>
+          This app exercises every feature the Crystal Webview framework offers.
+          Use the tabs above to explore each one. Live data streams from the
+          backend — the clock and memory pill update every second without
+          polling.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>Try this</h3>
+            <ol>
+              <li>
+                Open <strong>Files</strong>, pick a file. It appears in
+                <strong>Recents</strong>.
+              </li>
+              <li>
+                Open <strong>WebSocket</strong>, connect to the echo server.
+              </li>
+              <li>Click <em>Trigger notification</em> below.</li>
+            </ol>
+            <button
+              class="primary"
+              onclick="api.notify('Hello', 'From Crystal Webview')"
+            >
+              Trigger notification
+            </button>
+          </div>
+          <div class="card">
+            <h3>Capability log</h3>
+            <p>The backend logs every capability check. View this app's log:</p>
+            <pre id="log-path">—</pre>
+            <button onclick="api.openLogFolder()">Open log folder</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Files ──────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="files">
+        <h2>File system</h2>
+        <p>
+          Demonstrates <code>fs.list_dir</code>, <code>fs.read_text</code>,
+          <code>fs.write_text</code>, <code>fs.metadata</code>.
+        </p>
+        <div class="row">
+          <input id="file-path" value="/tmp" />
+          <button onclick="files.list()">List</button>
+          <button onclick="files.openDialog()">Open via dialog…</button>
+        </div>
+        <table id="file-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Size</th>
+              <th>Modified</th>
+            </tr>
+          </thead>
+          <tbody id="file-rows"></tbody>
+        </table>
+        <textarea
+          id="file-editor"
+          placeholder="Click a file to load…"
+        ></textarea>
+        <div class="row">
+          <button onclick="files.save()">Save</button>
+        </div>
+      </section>
+
+      <!-- Clipboard ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="clipboard">
+        <h2>Clipboard</h2>
+        <p>
+          <code>clipboard:read_text</code> / <code>clipboard:write_text</code>.
+          <span id="clip-version" class="pill">change #0</span>
+        </p>
+        <div class="row">
+          <textarea id="clip-text" placeholder="Type to copy…"></textarea>
+        </div>
+        <div class="row">
+          <button onclick="clip.write()">Copy</button>
+          <button onclick="clip.read()">Read</button>
+        </div>
+        <pre id="clip-out"></pre>
+      </section>
+
+      <!-- Dialogs ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="dialogs">
+        <h2>Native dialogs</h2>
+        <p>
+          <code>dialog:open_file</code>, <code>dialog:save_file</code>,
+          <code>dialog:select_folder</code>.
+        </p>
+        <div class="row">
+          <button onclick="dialogs.open()">Open file…</button>
+          <button onclick="dialogs.save()">Save file…</button>
+          <button onclick="dialogs.folder()">Select folder…</button>
+        </div>
+        <pre id="dialog-out">—</pre>
+      </section>
+
+      <!-- HTTP ───────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="http">
+        <h2>HTTP client</h2>
+        <p>
+          <code>http:get</code> via <code>Plugins::HTTP</code>. Hits a real
+          public API. Watch the progress bar for the bulk-fetch demo.
+        </p>
+        <div class="row">
+          <button class="primary" onclick="http.fetchOnce()">
+            Fetch 10 todos
+          </button>
+          <button onclick="http.bulkFetch()">
+            Bulk fetch (5 with progress)
+          </button>
+        </div>
+        <progress id="http-progress" max="100" value="0"></progress>
+        <div class="card">
+          <h3>TLS / HTTPS Server</h3>
+          <p id="tls-info">Checking TLS status...</p>
+        </div>
+        <pre id="http-out"></pre>
+      </section>
+
+      <!-- WebSocket ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="websocket">
+        <h2>WebSocket</h2>
+        <p>
+          <code>CrystKit::Features::WebSocketClient</code> wrapped in custom
+          commands. Connects to the public echo server.
+        </p>
+        <div class="row">
+          <input id="ws-url" value="wss://echo.websocket.org" />
+          <button onclick="ws.connect()">Connect</button>
+          <button onclick="ws.disconnect()">Disconnect</button>
+        </div>
+        <div class="row">
+          <input id="ws-msg" placeholder="Message" />
+          <button onclick="ws.send()">Send</button>
+        </div>
+        <pre id="ws-log"></pre>
+      </section>
+
+      <!-- Processes ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="processes">
+        <h2>Process management</h2>
+        <p>
+          <code>CrystKit::Features::ProcessManager</code> — spawn long-lived
+          child processes, stream their stdout, kill on demand.
+        </p>
+        <div class="row">
+          <button onclick="proc.run('ping', ['-c', '5', '127.0.0.1'])">
+            ping 127.0.0.1 (5x)
+          </button>
+          <button onclick="proc.run('ls', ['-la', '/tmp'])">ls /tmp</button>
+          <button onclick="proc.killAll()">Kill all</button>
+        </div>
+        <pre id="proc-out"></pre>
+      </section>
+
+      <!-- Shell ──────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="shell">
+        <h2>Shell sandbox</h2>
+        <p>
+          <code>CrystKit::Features::ShellExecutor</code> — synchronous command
+          execution with timeout and argument sanitization.
+        </p>
+        <div class="row">
+          <input id="shell-cmd" value="echo" />
+          <input id="shell-args" value="hello world" />
+          <button onclick="shell.run()">Run</button>
+        </div>
+        <pre id="shell-out"></pre>
+      </section>
+
+      <!-- System ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="system">
+        <h2>System info</h2>
+        <p>Read-only metadata via <code>Plugins::SystemInfo</code>.</p>
+        <div class="grid" id="system-grid"></div>
+      </section>
+
+      <!-- System Tray ────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="tray">
+        <h2>System Tray</h2>
+        <p>
+          <code>CrystKit::Features::SystemTray</code> — displays an icon in the
+          OS notification area with context menu support. Look for the tray icon
+          in your menu bar/system tray.
+        </p>
+        <div class="card">
+          <h3>Tray Features</h3>
+          <ul>
+            <li>Custom icon (PNG format, 16x16 to 256x256)</li>
+            <li>Tooltip on hover</li>
+            <li>Context menu with nested items</li>
+            <li>Click event handling (left/right button)</li>
+          </ul>
+        </div>
+        <div class="row">
+          <input
+            id="tray-tooltip"
+            placeholder="New tooltip text"
+            value="Crystal Webview Showcase"
+          />
+          <button onclick="trayDemo.setTooltip()">Update Tooltip</button>
+        </div>
+        <pre id="tray-log">Tray events will appear here...</pre>
+      </section>
+
+      <!-- Taskbar ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="taskbar">
+        <h2>Taskbar Progress</h2>
+        <p>
+          <code>CrystKit::Features::TaskbarProgress</code> — set progress,
+          badge text, and overlay icon on the OS taskbar/dock icon.
+        </p>
+        <div class="card">
+          <h3>Progress</h3>
+          <div class="row">
+            <input id="taskbar-progress" type="number" min="0" max="1" step="0.1" value="0.5" />
+            <button onclick="taskbarDemo.setProgress()">Set</button>
+            <button onclick="taskbarDemo.clearProgress()">Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Badge</h3>
+          <div class="row">
+            <input id="taskbar-badge" placeholder="Badge text (e.g. 3)" />
+            <button onclick="taskbarDemo.setBadge()">Set</button>
+            <button onclick="taskbarDemo.clearBadge()">Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>State</h3>
+          <div class="row">
+            <select id="taskbar-state">
+              <option value="none">No Progress</option>
+              <option value="normal">Normal</option>
+              <option value="paused">Paused</option>
+              <option value="error">Error</option>
+              <option value="indeterminate">Indeterminate</option>
+            </select>
+            <button onclick="taskbarDemo.setState()">Set State</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shortcuts ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="shortcuts">
+        <h2>Global Shortcuts</h2>
+        <p>
+          <code>CrystKit::Features::GlobalShortcuts</code> — register system-wide
+          keyboard shortcuts that work even when the app is not focused.
+        </p>
+        <div class="card">
+          <h3>Registered Shortcuts</h3>
+          <ul id="shortcuts-list"></ul>
+        </div>
+        <div class="row">
+          <input
+            id="shortcut-accelerator"
+            placeholder="e.g. Ctrl+Shift+X"
+            value="Meta+Shift+X"
+          />
+          <button class="primary" onclick="shortcutsDemo.register()">
+            Register
+          </button>
+          <button onclick="shortcutsDemo.unregister()">Unregister</button>
+        </div>
+        <p class="hint">
+          Use <code>Meta</code> for Cmd (macOS) or Win (Windows). Supported
+          modifiers: Ctrl, Alt, Shift, Meta. Supported keys: A-Z, 0-9, F1-F12,
+          Space, Enter, Escape, etc.
+        </p>
+        <pre id="shortcuts-log">Shortcut events will appear here...</pre>
+      </section>
+
+      <!-- Autostart ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="autostart">
+        <h2>Autostart</h2>
+        <p>
+          <code>CrystKit::Features::Autostart</code> — register the application
+          to start automatically when the user logs in.
+        </p>
+        <div class="card">
+          <h3>Current Status</h3>
+          <div class="row">
+            <span id="autostart-status" class="pill">checking...</span>
+          </div>
+        </div>
+        <div class="row">
+          <button class="primary" onclick="autostartDemo.enable()">
+            Enable Autostart
+          </button>
+          <button onclick="autostartDemo.disable()">Disable Autostart</button>
+          <button onclick="autostartDemo.refresh()">Refresh Status</button>
+        </div>
+        <div class="card">
+          <h3>Platform Details</h3>
+          <ul>
+            <li>
+              <strong>Linux:</strong> Creates .desktop file in
+              ~/.config/autostart/
+            </li>
+            <li>
+              <strong>macOS:</strong> Creates Launch Agent in
+              ~/Library/LaunchAgents/
+            </li>
+            <li><strong>Windows:</strong> Adds registry key in HKCU\...\Run</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Screen ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="screen">
+        <h2>Screen &amp; Positioning</h2>
+        <p>
+          <code>CrystKit::Features::WindowPositioner</code> — real display info
+          from the OS: monitor bounds, work areas, cursor position, and
+          screen-change detection.
+        </p>
+        <div class="row">
+          <button class="primary" onclick="screenDemo.refresh()">Refresh</button>
+        </div>
+        <div class="card">
+          <h3>Displays</h3>
+          <pre id="screen-list">Loading...</pre>
+        </div>
+        <div class="card">
+          <h3>Cursor Position</h3>
+          <pre id="cursor-pos">—</pre>
+        </div>
+        <div class="card">
+          <h3>Screen Change Events</h3>
+          <pre id="screen-events">Waiting for screen changes...</pre>
+        </div>
+      </section>
+
+      <!-- Updates ───────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="updates">
+        <h2>Auto-Updater</h2>
+        <p>
+          <code>CrystKit::Features::AutoUpdater</code> — check for updates,
+          install, rollback, and delta patching.
+        </p>
+        <div class="card">
+          <h3>Current Version</h3>
+          <p id="updater-version">1.5.0 (Stable)</p>
+        </div>
+        <div class="row">
+          <button class="primary" onclick="updaterDemo.check()">
+            Check for Updates
+          </button>
+          <button onclick="updaterDemo.install()">
+            Install Update
+          </button>
+          <button onclick="updaterDemo.rollback()">
+            Rollback
+          </button>
+        </div>
+        <pre id="updater-log">Update events will appear here...</pre>
+      </section>
+
+      <!-- Window ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="window">
+        <h2>Enhanced Window</h2>
+        <p>
+          <code>EnhancedWindow</code> native operations: always-on-top, opacity,
+          frameless. A demo window opens on first action.
+          <em>Modal requires a parent EnhancedWindow and is not available here.</em>
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>Always on Top</h3>
+            <button onclick="windowDemo.setAlwaysOnTop(true)">Enable</button>
+            <button onclick="windowDemo.setAlwaysOnTop(false)">Disable</button>
+          </div>
+          <div class="card">
+            <h3>Opacity</h3>
+            <div class="row">
+              <input id="window-opacity" type="number" min="0.1" max="1.0" step="0.1" value="1.0" />
+              <button onclick="windowDemo.setOpacity()">Set</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Frameless</h3>
+            <button onclick="windowDemo.setFrameless(true)">Enable</button>
+            <button onclick="windowDemo.setFrameless(false)">Disable</button>
+          </div>
+        </div>
+        <pre id="window-info">—</pre>
+        <div class="row">
+          <button onclick="windowDemo.refresh()">Refresh Info</button>
+        </div>
+        <div class="card">
+          <h3>Kiosk Mode</h3>
+          <p>Fullscreen + undecorated via <code>CrystKit::Features::KioskMode</code>.</p>
+          <div class="row">
+            <span id="kiosk-status" class="pill">inactive</span>
+            <button class="primary" onclick="kioskDemo.enter()">Enter</button>
+            <button onclick="kioskDemo.exit()">Exit</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recents ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="recents">
+        <h2>Recently opened</h2>
+        <p>
+          Maintained by <code>RecentsPlugin</code>, a custom plugin that depends
+          on <code>store</code> and listens to <code>recents:track</code> events
+          from the file open dialog.
+        </p>
+        <div class="row">
+          <button onclick="recents.refresh()">Refresh</button>
+          <button onclick="recents.clear()">Clear</button>
+        </div>
+        <ul id="recents-list"></ul>
+      </section>
+
+      <!-- Device ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="device">
+        <h2>Device</h2>
+        <p>
+          System theme, display DPI, power status, and user idle detection.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>System Theme</h3>
+            <div id="theme-info" class="v">—</div>
+          </div>
+          <div class="card">
+            <h3>DPI Scale</h3>
+            <div id="dpi-scale" class="v">—</div>
+          </div>
+          <div class="card">
+            <h3>Power</h3>
+            <div id="power-info" class="v">—</div>
+          </div>
+          <div class="card">
+            <h3>Idle</h3>
+            <div id="idle-info" class="v">—</div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="primary" onclick="device.refresh()">Refresh</button>
+        </div>
+        <div class="card">
+          <h3>Display Info</h3>
+          <pre id="device-display">—</pre>
+        </div>
+      </section>
+
+      <!-- Storage ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="storage">
+        <h2>Safe Storage</h2>
+        <p>
+          <code>CrystKit::Features::SafeStorage</code> — store, retrieve, and
+          delete credentials in the OS keychain.
+        </p>
+        <div class="card">
+          <h3>Current Service</h3>
+          <div class="row">
+            <input id="storage-service" value="Showcase" />
+            <button onclick="storageDemo.refresh()">Refresh</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Store Credential</h3>
+          <div class="row">
+            <input id="storage-key" placeholder="Key" />
+            <input id="storage-value" placeholder="Value" />
+            <button class="primary" onclick="storageDemo.set()">Set</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Retrieve</h3>
+          <div class="row">
+            <input id="storage-get-key" placeholder="Key" />
+            <button onclick="storageDemo.get()">Get</button>
+            <button onclick="storageDemo.delete()">Delete</button>
+          </div>
+          <pre id="storage-out">—</pre>
+        </div>
+        <div class="card">
+          <h3>Stored Keys</h3>
+          <ul id="storage-list"></ul>
+        </div>
+      </section>
+
+      <!-- Watcher ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="watcher">
+        <h2>File Watcher</h2>
+        <p>
+          <code>CrystKit::Features::FileWatcher</code> — watch directories for
+          file system changes using OS-native events.
+        </p>
+        <div class="row">
+          <input id="watcher-path" value="/tmp" />
+          <label><input type="checkbox" id="watcher-recursive" /> Recursive</label>
+          <button class="primary" onclick="watcherDemo.watch()">Watch</button>
+          <button onclick="watcherDemo.unwatch()">Unwatch</button>
+        </div>
+        <div class="card">
+          <h3>Watched Paths</h3>
+          <ul id="watcher-paths"></ul>
+        </div>
+        <div class="card">
+          <h3>Events</h3>
+          <pre id="watcher-log">No events yet. Watch a directory to start.</pre>
+        </div>
+        <div class="row">
+          <button onclick="watcherDemo.clear()">Clear Log</button>
+        </div>
+      </section>
+
+      <!-- Hardware ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="hardware">
+        <h2>Hardware</h2>
+        <p>
+          <code>CrystKit::Features::HardwareAPI</code> — enumerate connected
+          USB, Bluetooth, Serial, and HID devices using the platform's native
+          hardware enumeration APIs.
+        </p>
+        <div class="row">
+          <button class="primary" data-enum-btn="true" onclick="hardware.enumerate('USB', this)">USB</button>
+          <button class="primary" data-enum-btn="true" onclick="hardware.enumerate('Bluetooth', this)">Bluetooth</button>
+          <button class="primary" data-enum-btn="true" onclick="hardware.enumerate('Serial', this)">Serial</button>
+          <button class="primary" data-enum-btn="true" onclick="hardware.enumerate('HID', this)">HID</button>
+        </div>
+        <div class="card">
+          <h3>Devices (<span id="device-count">0</span>)</h3>
+          <table>
+            <thead>
+              <tr><th>Name</th><th>ID</th><th>Vendor</th><th>Product</th><th>Type</th><th>Connected</th></tr>
+            </thead>
+            <tbody id="device-list">
+              <tr><td colspan="6">Select a type above to enumerate devices.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Permissions ─────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="permissions">
+        <h2>Permissions</h2>
+        <p>
+          <code>CrystKit::Features::Permissions</code> — request and manage
+          OS-level permissions (camera, microphone, location, notifications,
+          accessibility).
+        </p>
+        <div class="card">
+          <h3>Request Permission</h3>
+          <div class="row">
+            <select id="perm-capability">
+              <option value="camera">Camera</option>
+              <option value="microphone">Microphone</option>
+              <option value="geolocation">Geolocation</option>
+              <option value="notifications">Notifications</option>
+              <option value="screen_capture">Screen Capture</option>
+              <option value="clipboard_read">Clipboard Read</option>
+            </select>
+            <button class="primary" onclick="perms.request()">Request</button>
+            <button onclick="perms.grant()">Grant</button>
+            <button onclick="perms.deny()">Deny</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Status</h3>
+          <pre id="perm-status">Click "Request" to check permission status.</pre>
+        </div>
+        <div class="card">
+          <h3>Live Test</h3>
+          <p>Actually calls <code>navigator.mediaDevices.getUserMedia()</code> — the real OS permission dialog.</p>
+          <div class="row">
+            <button class="primary" onclick="perms.testCamera()">Test Camera</button>
+            <button class="primary" onclick="perms.testMic()">Test Microphone</button>
+            <button onclick="perms.stopMedia()">Stop</button>
+          </div>
+          <video id="perm-video" autoplay playsinline muted style="width:100%;max-width:320px;margin-top:8px;border-radius:6px;display:none;background:#000;"></video>
+          <p id="perm-live-status" style="font-size:13px;color:var(--dim);margin-top:6px;"></p>
+        </div>
+      </section>
+
+      <!-- Window Effects ──────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="effects">
+        <h2>Window Effects</h2>
+        <p>
+          <code>CrystKit::Features::WindowEffects</code> — apply native visual
+          effects to the window background.
+        </p>
+        <div class="row">
+          <button onclick="effects.setVibrancy()">Vibrancy</button>
+          <button onclick="effects.setMica()">Mica</button>
+          <button onclick="effects.setAcrylic()">Acrylic</button>
+          <button onclick="effects.setBlur()">Blur</button>
+          <button onclick="effects.clear()">Clear</button>
+        </div>
+        <div class="card">
+          <h3>Current Effect</h3>
+          <pre id="effects-status">None</pre>
+        </div>
+      </section>
+
+      <!-- Positioning ─────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="positioning">
+        <h2>Positioning</h2>
+        <p>
+          <code>CrystKit::Features::WindowPositioner</code> — snap windows to
+          screen edges, corners, or maximize.
+        </p>
+        <div class="row">
+          <button onclick="positioning.snap('top-left')">Top Left</button>
+          <button onclick="positioning.snap('top')">Top</button>
+          <button onclick="positioning.snap('top-right')">Top Right</button>
+          <button onclick="positioning.snap('left')">Left</button>
+          <button onclick="positioning.snap('center')">Center</button>
+          <button onclick="positioning.snap('right')">Right</button>
+          <button onclick="positioning.snap('bottom-left')">Bottom Left</button>
+          <button onclick="positioning.snap('bottom')">Bottom</button>
+          <button onclick="positioning.snap('bottom-right')">Bottom Right</button>
+        </div>
+        <div class="row">
+          <button class="primary" onclick="positioning.maximize()">Maximize</button>
+          <button onclick="positioning.displayInfo()">Display Info</button>
+        </div>
+        <div class="card">
+          <h3>Display Info</h3>
+          <pre id="positioning-info">Click "Display Info" to see screen details.</pre>
+        </div>
+      </section>
+      <!-- Speech ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="speech">
+        <h2>Speech</h2>
+        <p>
+          <code>CrystKit::Plugins::Speech</code> — text-to-speech synthesis using
+          the platform's native TTS engine (NSSpeechSynthesizer on macOS,
+          speech-dispatcher on Linux, SAPI on Windows).
+        </p>
+        <div class="card">
+          <h3>Text-to-Speech</h3>
+          <textarea id="speech-text" placeholder="Enter text to speak…">Hello from CrystKit! This is the showcase app.</textarea>
+          <div class="row">
+            <button class="primary" onclick="speech.speak()">Speak</button>
+            <button onclick="speech.stop()">Stop</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Voices</h3>
+          <div class="row">
+            <select id="speech-voice"></select>
+            <button onclick="speech.listVoices(true)">Refresh</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Options</h3>
+          <div class="row">
+            <label>Rate: <input id="speech-rate" type="number" value="1.0" min="0.1" max="3.0" step="0.1" style="width:70px" /></label>
+            <label>Pitch: <input id="speech-pitch" type="number" value="1.0" min="0.0" max="2.0" step="0.1" style="width:70px" /></label>
+            <label>Volume: <input id="speech-volume" type="number" value="1.0" min="0.0" max="1.0" step="0.1" style="width:70px" /></label>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Speech-to-Text</h3>
+          <div class="row">
+            <select id="speech-recognition-language">
+              <option value="">Loading recognition languages…</option>
+            </select>
+            <button onclick="speech.listRecognitionLanguages(true)">Refresh Languages</button>
+            <button onclick="speech.requestRecognitionPermission()">Request Permission</button>
+            <button id="speech-recognition-start" class="primary" onclick="speech.startRecognition()" disabled>Start Listening</button>
+            <button onclick="speech.stopRecognition()">Stop</button>
+          </div>
+          <textarea id="speech-transcript" readonly placeholder="Native recognition results appear here"></textarea>
+          <pre id="speech-recognition-status">Checking availability…</pre>
+        </div>
+        <pre id="speech-status">Ready</pre>
+      </section>
+      <!-- Toolbar ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="toolbar">
+        <h2>Toolbar</h2>
+        <p>
+          <code>CrystKit::Plugins::Toolbar</code> exposes native toolbar
+          controls to the frontend.
+        </p>
+        <div class="card">
+          <div class="row">
+            <input id="tb-id" value="btn1" placeholder="id" />
+            <input id="tb-label" value="Button" placeholder="label" />
+            <input id="tb-icon" value="" placeholder="icon (optional)" />
+            <button onclick="toolbarDemo.addItem()">Add Button</button>
+            <button onclick="toolbarDemo.addSep()">Separator</button>
+          </div>
+          <div class="row">
+            <input id="tb-toggle-id" value="tog1" placeholder="id" style="width:6em" />
+            <input id="tb-toggle-label" value="Toggle" placeholder="label" style="width:6em" />
+            <label><input id="tb-toggle-checked" type="checkbox" checked /> on</label>
+            <button onclick="toolbarDemo.addToggle()">Add Toggle</button>
+          </div>
+          <div class="row">
+            <input id="tb-dd-id" value="dd1" placeholder="id" style="width:6em" />
+            <input id="tb-dd-label" value="Size" placeholder="label" style="width:6em" />
+            <input id="tb-dd-opts" value="Small,Medium,Large" placeholder="opts (csv)" style="width:10em" />
+            <button onclick="toolbarDemo.addDropdown()">Add Dropdown</button>
+          </div>
+          <div class="row">
+            <input id="tb-remove" value="btn1" placeholder="id to remove" />
+            <button onclick="toolbarDemo.removeItem()">Remove</button>
+            <button onclick="toolbarDemo.clear()">Clear</button>
+            <button onclick="toolbarDemo.listItems()">List Items</button>
+          </div>
+          <pre id="toolbar-out" style="font-size:0.85em">No items.</pre>
+        </div>
+      </section>
+      <!-- Cookies ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="cookies">
+        <h2>Cookies</h2>
+        <p><code>CrystKit::Plugins::Cookie</code> — in-memory HTTP cookie store.</p>
+        <div class="card">
+          <div class="row">
+            <input id="ck-key" value="name" placeholder="key" />
+            <input id="ck-val" value="value" placeholder="value" />
+            <button onclick="cookieDemo.set()">Set</button>
+            <button onclick="cookieDemo.get()">Get</button>
+            <button onclick="cookieDemo.delete()">Delete</button>
+            <button onclick="cookieDemo.all()">All</button>
+          </div>
+          <pre id="cookie-out">Click All to list cookies.</pre>
+        </div>
+      </section>
+      <!-- Printing ────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="printing">
+        <h2>Printing</h2>
+        <p><code>CrystKit::Plugins::Printing</code> — native print dialog and PDF export.</p>
+        <div class="card">
+          <div class="row">
+            <button onclick="printingDemo.print()">Print</button>
+            <button onclick="printingDemo.toPdf()">Export PDF</button>
+            <button onclick="printingDemo.listPrinters()">List Printers</button>
+            <button onclick="printingDemo.showDialog()">Show Dialog</button>
+          </div>
+          <pre id="printing-out">Click a button to start.</pre>
+        </div>
+      </section>
+      <!-- Display ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="display">
+        <h2>Display</h2>
+        <p><code>CrystKit::Plugins::DisplayManager</code> — multi-monitor info.</p>
+        <div class="card">
+          <div class="row">
+            <button onclick="displayDemo.info()">Display Info</button>
+          </div>
+          <pre id="display-out">Click for display info.</pre>
+        </div>
+      </section>
+      <!-- Resources ───────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="resources">
+        <h2>Resources</h2>
+        <p><code>CrystKit::Plugins::ResourceManager</code> — bundled resource paths.</p>
+        <div class="card">
+          <div class="row">
+            <button onclick="resourcesDemo.getDir()">Get Resource Dir</button>
+            <button onclick="resourcesDemo.resolve()">Resolve Path</button>
+          </div>
+          <pre id="resources-out">Click a button.</pre>
+        </div>
+      </section>
+      <!-- Draggable Region ─────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="draggable">
+        <h2>Draggable Region</h2>
+        <p><code>CrystKit::Plugins::DraggableRegion</code> — make window regions draggable.</p>
+        <div class="card">
+          <div class="row">
+            <button onclick="draggableDemo.enable()">Enable Drag Region</button>
+            <button onclick="draggableDemo.disable()">Disable</button>
+          </div>
+          <pre id="draggable-out">Click to toggle.</pre>
+        </div>
+      </section>
+      <!-- Navigation ──────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="navigation">
+        <h2>Navigation</h2>
+        <p><code>CrystKit::Plugins::Navigation</code> — navigation policy handlers.</p>
+        <div class="card">
+          <div class="row">
+            <input id="nav-url" value="https://example.com" placeholder="URL" />
+            <button onclick="navDemo.setHandler()">Set Handler</button>
+            <button onclick="navDemo.clearHandler()">Clear Handler</button>
+          </div>
+          <pre id="navigation-out">Navigation handler controls.</pre>
+        </div>
+      </section>
+      <!-- Sidecar ─────────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="sidecar">
+        <h2>Sidecar</h2>
+        <p><code>CrystKit::Plugins::Sidecar</code> — sidecar binary execution.</p>
+        <div class="card">
+          <div class="row">
+            <input id="sidecar-name" value="echo" placeholder="binary name" />
+            <button onclick="sidecarDemo.execute()">Execute</button>
+            <button onclick="sidecarDemo.list()">List</button>
+          </div>
+          <pre id="sidecar-out">Click to run sidecar.</pre>
+        </div>
+      </section>
+      <!-- Drag Source ─────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="dragsource">
+        <h2>Drag Source</h2>
+        <p><code>CrystKit::Plugins::DragSource</code> — start drag operations from code.</p>
+        <div class="card">
+          <div class="row">
+            <input id="ds-text" value="Drag this text" placeholder="text" />
+            <button onmousedown="dragSourceDemo.startText(event)">Drag Text</button>
+          </div>
+          <div class="row">
+            <input id="ds-file" value="/tmp" placeholder="file path" />
+            <button onmousedown="dragSourceDemo.startFile(event)">Drag File</button>
+          </div>
+          <div class="row">
+            <input id="ds-url" value="https://example.com" placeholder="url" />
+            <button onmousedown="dragSourceDemo.startUrl(event)">Drag URL</button>
+          </div>
+          <textarea id="ds-drop-zone" placeholder="Drop text or URLs here to verify the payload."></textarea>
+          <pre id="dragsource-out">Press and hold a drag button, move the pointer, then drop into this text area or another app.</pre>
+        </div>
+      </section>
+      <!-- DevTools ─────────────────────────────────────────────────────────-- -->
+      <section class="panel" data-panel="devtools">
+        <h2>DevTools</h2>
+        <p><code>CrystKit::Plugins::DevTools</code> — WebView inspector.</p>
+        <div class="card">
+          <div class="row">
+            <button onclick="devtoolsDemo.open()">Open</button>
+            <button onclick="devtoolsDemo.close()">Close</button>
+            <button onclick="devtoolsDemo.toggle()">Toggle</button>
+            <button onclick="devtoolsDemo.status()">Status</button>
+          </div>
+          <pre id="devtools-out">DevTools controls.</pre>
+        </div>
+      </section>
+      <!-- Window State ────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="wstate">
+        <h2>Window State</h2>
+        <p><code>CrystKit::Plugins::WState</code> — save/restore window position and size.</p>
+        <div class="card">
+          <div class="row">
+            <input id="ws-key" value="main" placeholder="window key" />
+            <button onclick="wsDemo.save()">Save</button>
+            <button onclick="wsDemo.restore()">Restore</button>
+            <button onclick="wsDemo.saveAll()">Save All</button>
+          </div>
+          <pre id="ws-out">Click to save/restore.</pre>
+        </div>
+      </section>
+      <!-- Drag Drop ────────────────────────────────────────────────────── -->
+      <section class="panel" data-panel="dragdrop">
+        <h2>Drag &amp; Drop</h2>
+        <p><code>CrystKit::Plugins::DragDrop</code> — OS-level drag-and-drop events.</p>
+        <div class="card">
+          <p>Drag files or text onto this window to see events.</p>
+          <div class="row">
+            <button onclick="dragDropDemo.clear()">Clear</button>
+            <span id="dragdrop-over">No drag in progress.</span>
+          </div>
+          <pre id="dragdrop-log">No events yet.</pre>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "app": "Asset Protocol Example",
+  "version": "1.0.0",
+  "served_by": "crystkit://",
+  "no_tcp": true,
+  "features": ["virtualfs", "custom_protocol", "spa_fallback"]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "./schemas/crystkit.schema.json",
+  "package": {
+    "name": "<%= name %>",
+    "version": "<%= version %>",
+    "identifier": "<%= identifier %>",
+    "authors": [<%= author.empty? ? "" : author.to_json %>]
+  },
+  "build": {
+    "frontend_dist": "./frontend",
+    "dev_url": "http://localhost:3000"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "<%= name %>",
+        "width": 800,
+        "height": 600,
+        "center": true,
+        "decorations": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "capabilities_manifest": "capabilities.json",
+      "allow_cors": false
+    }
+  },
+  "bundle": {
+    "icon": ["icons/tray_icon.png"],
+    "targets": [],
+    "category": "Utility",
+    "copyright": ""
+  },
+  "plugins": {}
+}

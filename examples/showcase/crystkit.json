@@ -1,0 +1,35 @@
+{
+  "$schema": "./schemas/crystkit.schema.json",
+  "package": {
+    "name": "Showcase",
+    "version": "1.0.0",
+    "identifier": "dev.crystkit.showcase"
+  },
+  "build": {
+    "frontend_dist": "./assets",
+    "dev_url": "http://localhost:5173"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Crystal CrystKit Showcase",
+        "width": 1100,
+        "height": 750,
+        "center": true,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "capabilities_manifest": "./capabilities.json"
+    }
+  },
+  "bundle": {
+    "icon": [],
+    "targets": ["dmg", "deb"],
+    "category": "Development",
+    "copyright": "Copyright (c) 2024 Ali Naqvi",
+    "macos_microphone_usage_description": "Allow Showcase to capture microphone audio for speech recognition.",
+    "macos_speech_recognition_usage_description": "Allow Showcase to turn spoken words into text."
+  },
+  "plugins": {}
+}

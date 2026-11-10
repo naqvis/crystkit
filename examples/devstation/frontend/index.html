@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Force WebKit/WKWebView into dark color scheme before any CSS loads.
+         This is the key rule — without it macOS WebView renders its own
+         light-mode UA stylesheet over the top of everything. -->
+    <meta name="color-scheme" content="dark" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss: https: http:; img-src 'self' data: blob:; font-src 'self' data:;"
+    />
+    <title>CrystKit DevStation</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <style>
+      /* Immediate baseline — zero white flash in WKWebView */
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body,
+      #app {
+        background: #0a0c10 !important;
+        color: #f0f6fc !important;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

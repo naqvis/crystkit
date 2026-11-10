@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="article-id" content="{{article_id}}">
+  <title>{{title}}</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #16161d;
+      --border: #272732;
+      --text: #e8e8e8;
+      --text-secondary: #a0a0b0;
+      --accent: #6366f1;
+      --accent-text: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 26px;
+      flex-shrink: 0;
+    }
+    h1 { margin: 0 0 8px; font-size: 21px; line-height: 1.25; }
+    .meta { font-size: 13px; color: var(--text-secondary); }
+    .actions { margin-top: 12px; display: flex; gap: 8px; }
+    button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    button:hover { background: var(--bg); color: var(--text); }
+    #content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 26px;
+      line-height: 1.65;
+      font-size: 15px;
+      color: var(--text);
+    }
+    #content img { max-width: 100%; height: auto; }
+    #content a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">{{title}}</h1>
+    <div class="meta" id="meta">{{feed_title}} · {{author}} · {{published_at}}</div>
+    <div class="actions">
+      <button type="button" id="btn-open">Open in browser</button>
+    </div>
+  </header>
+  <div id="content">{{content}}</div>
+
+  <script>
+    const ipc = window.__CRYSTKIT_IPC__;
+    const link = "{{link}}";
+
+    document.getElementById('btn-open').onclick = function() {
+      if (link && ipc) ipc.invoke('reader.open_window', link);
+    };
+
+    document.getElementById('content').addEventListener('click', function(e) {
+      var a = e.target.closest('a');
+      if (!a) return;
+      e.preventDefault();
+      var href = a.getAttribute('href');
+      if (href && ipc) ipc.invoke('reader.open_window', href);
+    });
+  </script>
+</body>
+</html>

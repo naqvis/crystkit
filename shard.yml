@@ -1,0 +1,34 @@
+name: crystkit
+version: 1.0.0
+
+authors:
+  - Ali Naqvi <syed.alinaqvi@gmail.com>
+
+description: |
+  A framework for building lightweight, secure, cross-platform desktop applications using Crystal and web technologies.
+
+crystal: ">= 1.21.0"
+
+license: MIT
+
+dependencies:
+  webview:
+    github: naqvis/webview
+
+  native_desktop:
+    github: naqvis/native_desktop
+
+  json_patch:
+    github: naqvis/json_patch
+
+  virtualfs:
+    github: naqvis/virtualfs
+
+  system_info:
+    github: naqvis/system_info
+
+  file_watcher:
+    github: naqvis/file_watcher
+
+  safe_storage:
+    github: naqvis/safe_storage

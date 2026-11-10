@@ -1,0 +1,18 @@
+{
+  "$schema": "./schemas/capabilities.schema.json",
+  "capabilities": [
+    "fs:read",
+    "fs:delete",
+    "system:read",
+    "dialog:open",
+    "external:open",
+    "window:manage",
+    "menu:manage",
+    "devtools:manage",
+    "context_menu:custom",
+    "context_menu:inspect"
+  ],
+  "scopes": {
+    "fs": ["*"]
+  }
+}

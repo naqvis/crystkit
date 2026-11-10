@@ -1,0 +1,38 @@
+{
+    "$schema": "./schemas/crystkit.schema.json",
+    "package": {
+        "name": "CrystKit DevStation",
+        "version": "1.0.0",
+        "identifier": "dev.crystkit.devstation"
+    },
+    "build": {
+        "frontend_dist": "./frontend/dist",
+        "dev_url": "http://localhost:5173"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "CrystKit DevStation",
+                "width": 1440,
+                "height": 900,
+                "center": true,
+                "label": "main"
+            }
+        ],
+        "security": {
+            "capabilities_manifest": "./capabilities.json"
+        }
+    },
+    "bundle": {
+        "icon": [],
+        "targets": [
+            "dmg",
+            "deb",
+            "appimage",
+            "msi"
+        ],
+        "category": "DeveloperTool",
+        "copyright": "Copyright (c) 2026 CrystKit"
+    },
+    "plugins": {}
+}

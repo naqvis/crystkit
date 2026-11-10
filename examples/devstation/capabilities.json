@@ -1,0 +1,32 @@
+{
+  "$schema": "./schemas/capabilities.schema.json",
+  "capabilities": [
+    "fs:read",
+    "fs:write",
+    "fs:delete",
+    "dialog:open",
+    "dialog:save",
+    "clipboard:read",
+    "clipboard:write",
+    "notification:show",
+    "external:open",
+    "store:manage",
+    "shell:execute",
+    "process:spawn",
+    "process:kill",
+    "http:request",
+    "theme:manage",
+    "websocket:connect",
+    "window:effects"
+  ],
+  "scopes": {
+    "fs": ["~"],
+    "http": [
+      "https://*",
+      "http://localhost",
+      "http://127.0.0.1"
+    ],
+    "process": ["*"],
+    "shell": ["*"]
+  }
+}

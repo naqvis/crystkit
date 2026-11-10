@@ -1,0 +1,15 @@
+{
+  "$schema": "./schemas/capabilities.schema.json",
+  "capabilities": [
+    "clipboard:read",
+    "clipboard:write",
+    "fs:read",
+    "fs:write",
+    "dialog:open",
+    "dialog:save",
+    "notification:show"
+  ],
+  "scopes": {
+    "fs": ["~"]
+  }
+}

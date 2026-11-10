@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= name %></title>
+    <style>
+      body {
+        font-family: system-ui;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      button {
+        margin: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+      #output,
+      #events {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        min-height: 40px;
+      }
+      #output {
+        background: #f0f0f0;
+        white-space: pre-wrap;
+      }
+      #events {
+        background: #e8f4e8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><%= name %> — IPC Demo</h1>
+    <button id="greet">Greet</button>
+    <button id="time">Server time</button>
+    <button id="emit">Trigger backend event</button>
+    <h3>Result</h3>
+    <div id="output">Click a button…</div>
+    <h3>Events</h3>
+    <div id="events">Waiting…</div>
+    <script>
+      const ipc = window.__CRYSTKIT_IPC__;
+      const out = document.getElementById("output");
+      const events = document.getElementById("events");
+
+      ipc.listen(
+        "server:tick",
+        (p) => (events.textContent = JSON.stringify(p)),
+      );
+
+      greet.onclick = async () =>
+        (out.textContent = await ipc.invoke("greet", "Developer"));
+      time.onclick = async () =>
+        (out.textContent =
+          "Server time: " + (await ipc.invoke("get_time", {})));
+      emit.onclick = () =>
+        ipc.emit("frontend:ping", { message: "ping from JS" });
+    </script>
+  </body>
+</html>

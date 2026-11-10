@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CrystKit Capabilities Manifest",
+  "description": "Auto-generated from Crystal struct definitions. Do not edit manually.",
+  "type": "object",
+  "properties": {
+    "capabilities": {
+      "type": "array",
+      "description": "Additional app-owned capability grants; plugin metadata capabilities are granted automatically when plugins register",
+      "items": {
+        "type": "string"
+      }
+    },
+    "groups": {
+      "type": "object",
+      "description": "Named groups of capabilities for reuse and organization",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "windows": {
+      "type": "object",
+      "description": "Per-window frontend IPC allow-lists, keyed by window label",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "scopes": {
+      "type": "object",
+      "description": "Resource scopes for fine-grained access control, keyed by capability prefix (fs, http, process)",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "capabilities",
+    "groups",
+    "windows",
+    "scopes"
+  ]
+}

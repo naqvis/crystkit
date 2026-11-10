@@ -1,0 +1,39 @@
+# Minimal dependency manifest for the crystkit builder CLI.
+#
+# The CLI (init/dev/build/bundle/plugin/icon/schema/doctor/info) depends on a
+# small set of pure-Crystal shards and never requires the runtime's native
+# dependencies (webview, native_desktop, sqlite3, openssl_ext, safe_storage).
+# Building from this manifest avoids webview's native postinstall build step
+# deps that the full runtime shard.yml needs.
+name: crystkit-builder
+version: 1.0.0
+
+authors:
+  - Ali Naqvi <syed.alinaqvi@gmail.com>
+
+description: |
+  Builder CLI for CrystKit — scaffold, develop, build, and bundle desktop applications.
+
+targets:
+  crystkit:
+    main: ../src/builder/cli.cr
+
+crystal: ">= 1.21.0"
+
+license: MIT
+
+dependencies:
+  option_builder:
+    github: naqvis/option_builder
+
+  json-schema:
+    github: spider-gazelle/json-schema
+
+  virtualfs:
+    github: naqvis/virtualfs
+
+  system_info:
+    github: naqvis/system_info
+
+  file_watcher:
+    github: naqvis/file_watcher

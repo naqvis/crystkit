@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiskPie</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<script>
+  window.onerror = function(msg, url, line, col, err) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:99999;font-family:monospace;font-size:12px;white-space:pre-wrap;';
+    d.textContent = 'JS ERROR: ' + msg + '\n at ' + url + ':' + line + ':' + col + '\n' + (err && err.stack ? err.stack : '');
+    document.body.appendChild(d);
+  };
+  window.addEventListener('unhandledrejection', function(e) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:darkred;color:white;padding:10px;z-index:99999;font-family:monospace;font-size:12px;white-space:pre-wrap;';
+    d.textContent = 'UNHANDLED REJECTION: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + (e.reason && e.reason.stack ? '\n' + e.reason.stack : '');
+    document.body.appendChild(d);
+  });
+</script>
+
+  <!-- Launch screen: drives + folder -->
+  <div id="launch" data-ctx="disk-list">
+    <div class="launch-head">
+      <h1>Disk Usage Analyzer</h1>
+      <p>Pick a drive or folder. DiskPie renders your storage as a living map you can dive into.</p>
+    </div>
+    <div class="drive-grid" id="drive-grid"></div>
+  </div>
+
+  <!-- Results screen: sorted list -->
+  <div id="results" data-ctx="disk-detail">
+    <div class="chartpane">
+      <div class="res-head">
+        <div class="meta" id="hud-meta"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="list" id="atlas"></div>
+    </div>
+
+    <div class="dock" id="dock">
+      <div class="dock-head">
+        <div class="t">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff5d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h-8v4H3v14h18V7h-5z"/><path d="M8 3v4h8V3"/></svg>
+          Duplicate sets
+        </div>
+        <div class="cnt" id="dup-cnt"></div>
+        <div class="sp"></div>
+        <button class="btn ghost" id="btn-dup-close">Done</button>
+      </div>
+      <div class="dup-list" id="dup-list"></div>
+    </div>
+
+    <div class="collector hide" id="collector">
+      <div class="lab">Collecting <b id="col-count">0</b> &middot; <b id="col-size">0 B</b> to remove</div>
+      <div class="chips" id="chips"></div>
+      <div class="acts">
+        <button class="btn ghost" id="btn-collector-clear">Clear</button>
+        <button class="btn primary" id="btn-collector-delete">Move to Trash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scan progress overlay -->
+  <div id="scan-overlay">
+    <div id="scan-box">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#5b8def" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+      <h3>Scanning <span id="scan-path"></span></h3>
+      <div id="scan-progress-bar-bg">
+        <div id="scan-progress-bar"></div>
+      </div>
+      <div id="scan-percent"></div>
+      <button id="btn-scan-back" class="scan-back">Cancel</button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

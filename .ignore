@@ -1,0 +1,6 @@
+**/docs/**
+**/bin/**
+**/.vscode/**
+shard.lock
+.ameba.yml
+.crys*
